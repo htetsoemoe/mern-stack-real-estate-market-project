@@ -12,6 +12,8 @@ console.log(process.env.NODE_ENV);
 connectDB();
 app.use(cors(corsOptions));
 
+app.use('/api/user', require('./routes/userRoutes'));
+
 mongoose.connection.once('open', () => {
     console.log('Connect to MongoDB');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
