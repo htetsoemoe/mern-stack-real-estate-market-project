@@ -21,7 +21,9 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || 'Internal Server Error';
+  
     return res.status(statusCode).json({
+        //text: 'default error handler from server.js',
         success: false,
         statusCode,
         message,
