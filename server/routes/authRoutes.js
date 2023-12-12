@@ -8,4 +8,7 @@ router.route('/signup')
 router.route('/signin')
     .post(authController.signIn)
 
+router.route('/google')
+    .post(authController.google)
+
 module.exports = router;
