@@ -8,18 +8,19 @@ import {
   uploadBytesResumable // Uploads data to this object's location. The upload can be paused and resumed, and exposes progress updates.
 } from 'firebase/storage'
 import { app } from '../firebase'
+import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/user/userSlice'
+import { useDispatch } from 'react-redux'
 
 const Profile = () => {
-  const { currentUser } = useSelector((state) => state.user)
+  const { currentUser, loading, error } = useSelector((state) => state.user)
+  const dispatch = useDispatch()
+
   const fileRef = useRef(null) // using hidden file input
   const [file, setFile] = useState(undefined)
   const [filePercentage, setFilePercentage] = useState(0)
   const [fileUploadError, setFileUploadError] = useState(false)
   const [formData, setFormData] = useState([])
-
-  const [username, setUsername] = useState(currentUser.username)
-  const [email, setEmail] = useState(currentUser.email)
-  const [newPassword, setNewPassword] = useState("")
+  const [updateSuccess, setUpdateSuccess] = useState(false)
 
   useEffect(() => {
     if (file) {
@@ -42,6 +43,7 @@ const Profile = () => {
         setFileUploadError(true)
       },
       // After upload new image, this callback will invoke
+      // User updated image is becoming downloadURL, which was assigned to avatar
       () => {
         getDownloadURL(uploadTask.snapshot.ref)
           .then((downloadURL) => setFormData({ ...formData, avatar: downloadURL }))
@@ -49,10 +51,42 @@ const Profile = () => {
     )
   }
 
+  const handleInputChange = (event) => {
+    setFormData({ ...formData, [event.target.id]: event.target.value })
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    try {
+      dispatch(updateUserStart())
+
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+
+      const data = await res.json()
+
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message))
+        return
+      }
+
+      dispatch(updateUserSuccess(data))
+      setUpdateSuccess(true)
+
+    } catch (error) {
+      dispatch(updateUserFailure(error.message))
+    }
+  }
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="file"
           onChange={(e) => setFile(e.target.files[0])}
@@ -82,28 +116,29 @@ const Profile = () => {
         </p>
 
         <input type="text"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          defaultValue={currentUser.username}
+          onChange={handleInputChange}
           placeholder='Username'
           name="username" id="username"
           className="border p-3 rounded-lg focus:outline-none" />
 
         <input type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          defaultValue={currentUser.email}
+          onChange={handleInputChange}
           placeholder='Email'
-          ame="email" id="email"
+          name="email" id="email"
           className="border p-3 rounded-lg focus:outline-none" />
 
-        <input type="text"
-          value={newPassword}
-          onChange={(event) => setNewPassword(event.target.value)}
+        <input type="password"
+          onChange={handleInputChange}
           placeholder='New Password'
           name="password" id="password"
           className="border p-3 rounded-lg focus:outline-none" />
 
-        <button className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80">
-          update
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 disabled:opacity-80">
+          {loading ? 'Loading...' : 'Update'}
         </button>
       </form>
 
@@ -111,6 +146,9 @@ const Profile = () => {
         <span className="text-red-700 cursor-pointer">Delete Account</span>
         <span className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
+
+      <p className="text-red-700 mt-5">{error ? error : ''}</p>
+      <p className="text-green-700 mt-5">{updateSuccess ? 'User was updated successfully!' : ''}</p>
     </div>
   )
 }
