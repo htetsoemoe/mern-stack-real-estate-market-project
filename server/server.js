@@ -16,6 +16,7 @@ console.log(process.env.NODE_ENV);
 connectDB();
 app.use(cors(corsOptions));
 
+app.use('/api/listing/', require('./routes/listingRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 
