@@ -8,9 +8,10 @@ import {
   uploadBytesResumable // Uploads data to this object's location. The upload can be paused and resumed, and exposes progress updates.
 } from 'firebase/storage'
 import { app } from '../firebase'
-import { 
+import {
   updateUserStart, updateUserSuccess, updateUserFailure,
   deleteUserStart, deleteUserSuccess, deleteUserFailure,
+  signoutStart, signoutSuccess, signInFailure, signoutFailure,
 } from '../redux/user/userSlice'
 import { useDispatch } from 'react-redux'
 import Swal from 'sweetalert2'
@@ -126,6 +127,22 @@ const Profile = () => {
     });
   }
 
+  // SignOut Handler
+  const singOutHandler = async () => {
+    try {
+      dispatch(signoutStart())
+      const res = await fetch('/api/auth/signout')  // default request is 'GET'
+      const data = await res.json()
+      if (data.success === false) {
+        dispatch(signoutFailure(data.message))
+        return
+      }
+      dispatch(signoutSuccess())
+    } catch (error) {
+      dispatch(signoutFailure(error.message))
+    }
+  }
+
   return (
     <div className='p-3 max-w-lg mx-auto'>
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -186,10 +203,12 @@ const Profile = () => {
       </form>
 
       <div className="flex justify-between mt-5">
-        <span 
+        <span
           onClick={deleteUserHandler}
           className="text-red-700 cursor-pointer">Delete Account</span>
-        <span className="text-red-700 cursor-pointer">Sign Out</span>
+        <span
+          onClick={singOutHandler}
+          className="text-red-700 cursor-pointer">Sign Out</span>
       </div>
 
       <p className="text-red-700 mt-5">{error ? error : ''}</p>

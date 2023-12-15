@@ -11,4 +11,6 @@ router.route('/signin')
 router.route('/google')
     .post(authController.google)
 
+router.route('/signout')
+    .get(authController.signout)
 module.exports = router;
