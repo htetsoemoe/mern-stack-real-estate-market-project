@@ -51,14 +51,14 @@ const Signin = () => {
         <input
           type='email'
           placeholder='email'
-          className='border p-3 rounded-lg'
+          className='border p-3 rounded-lg focus:outline-none'
           id='email'
           onChange={handleChange}
         />
         <input
           type='password'
           placeholder='password'
-          className='border p-3 rounded-lg'
+          className='border p-3 rounded-lg focus:outline-none'
           id='password'
           onChange={handleChange}
         />
