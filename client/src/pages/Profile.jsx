@@ -27,6 +27,8 @@ const Profile = () => {
   const [fileUploadError, setFileUploadError] = useState(false)
   const [formData, setFormData] = useState([])
   const [updateSuccess, setUpdateSuccess] = useState(false)
+  const [showListingsError, setShowListingsError] = useState(false)
+  const [userListings, setUserListings] = useState([])
 
   useEffect(() => {
     if (file) {
@@ -144,8 +146,26 @@ const Profile = () => {
     }
   }
 
+  const ShowListingsHandler = async () => {
+    try {
+      setShowListingsError(false)
+      const res = await fetch(`/api/user/listings/${currentUser._id}`)
+      const data = await res.json()
+
+      if (data.success === false) {
+        setShowListingsError(true)
+        return
+      }
+
+      setUserListings(data)
+
+    } catch (error) {
+      setShowListingsError(true)
+    }
+  }
+
   return (
-    <div className='p-3 max-w-lg mx-auto'>
+    <div className='p-3 max-w-2xl mx-auto'>
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
@@ -220,6 +240,43 @@ const Profile = () => {
 
       <p className="text-red-700 mt-5">{error ? error : ''}</p>
       <p className="text-green-700 mt-5">{updateSuccess ? 'User was updated successfully!' : ''}</p>
+
+      <button
+        onClick={ShowListingsHandler}
+        className="text-green-700 w-full">
+        Show Listings
+      </button>
+      <p className="text-red-700 mt-5">
+        {showListingsError ? 'Error Showing Listings' : ''}
+      </p>
+
+      {userListings && userListings.length > 0 && 
+        <div className="flex flex-col gap-4">
+          <h1 className="text-center mt-7 text-2xl font-semibold">Your Listings</h1>
+          {userListings.map((listing) => (
+            <div 
+              className="border rounded-lg p-3 flex justify-between items-center gap-4"
+              key={listing._id}
+            >
+              <Link to={`/listing/${listing._id}`}>
+                <img src={listing.imageUrls[0]} alt="listing photo" 
+                  className='h-16 w-16 object-contain'/>
+              </Link>
+
+              <Link to={`/listing/${listing._id}`}
+                className='text-slate-700 font-semibold hover:underline truncate flex-1'
+              >
+                <p>{listing.name}</p>
+              </Link>
+
+              <div className="flex gap-3 items-center">
+                <button className="bg-red-700 p-1 rounded text-white uppercase">Delete</button>
+                <button className="bg-green-700 p-1 rounded text-white uppercase">Edit</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      }
     </div>
   )
 }
