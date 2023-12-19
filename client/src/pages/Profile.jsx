@@ -146,6 +146,7 @@ const Profile = () => {
     }
   }
 
+  // Show all listings of Login User
   const ShowListingsHandler = async () => {
     try {
       setShowListingsError(false)
@@ -162,6 +163,48 @@ const Profile = () => {
     } catch (error) {
       setShowListingsError(true)
     }
+  }
+
+  // this method will use in 'listingDeleteHandler'
+  const listingDelete = async (listingId) => {
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+
+      if (data.success === false) {
+        console.log(data.message)
+        return
+      }
+
+      setUserListings((prev) => prev.filter((listing) => listing._id !== listingId))
+
+    } catch (error) {
+      console.log(error.message)
+    }
+  }
+
+  // Handler for delete specific login user's a listing
+  const listingDeleteHandler = (listingId) => {
+    Swal.fire({
+      title: "Are you sure to delete this listing?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Deleted!",
+          text: "Your file has been deleted.",
+          icon: "success"
+        });
+        await listingDelete(listingId)
+      }
+    });
   }
 
   return (
@@ -250,17 +293,17 @@ const Profile = () => {
         {showListingsError ? 'Error Showing Listings' : ''}
       </p>
 
-      {userListings && userListings.length > 0 && 
+      {userListings && userListings.length > 0 && (
         <div className="flex flex-col gap-4">
           <h1 className="text-center mt-7 text-2xl font-semibold">Your Listings</h1>
           {userListings.map((listing) => (
-            <div 
+            <div
               className="border rounded-lg p-3 flex justify-between items-center gap-4"
               key={listing._id}
             >
               <Link to={`/listing/${listing._id}`}>
-                <img src={listing.imageUrls[0]} alt="listing photo" 
-                  className='h-16 w-16 object-contain'/>
+                <img src={listing.imageUrls[0]} alt="listing photo"
+                  className='h-16 w-16 object-contain' />
               </Link>
 
               <Link to={`/listing/${listing._id}`}
@@ -270,12 +313,14 @@ const Profile = () => {
               </Link>
 
               <div className="flex gap-3 items-center">
-                <button className="bg-red-700 p-1 rounded text-white uppercase">Delete</button>
+                <button
+                  onClick={() => listingDeleteHandler(listing._id)}
+                  className="bg-red-700 p-1 rounded text-white uppercase">Delete</button>
                 <button className="bg-green-700 p-1 rounded text-white uppercase">Edit</button>
               </div>
             </div>
           ))}
-        </div>
+        </div>)
       }
     </div>
   )
