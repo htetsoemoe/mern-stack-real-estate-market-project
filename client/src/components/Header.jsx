@@ -1,10 +1,30 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaSearch } from 'react-icons/fa'
 import { useSelector } from 'react-redux'
 
 const Header = () => {
     const { currentUser } = useSelector((state) => state.user)
+    const [searchTerm, setSearchTerm] = useState('')
+    const navigate = useNavigate()
+
+    // User search with 'searcTerm' appends to url
+    const formSubmitHandler = (event) => {
+        event.preventDefault()
+        const urlParams = new URLSearchParams(window.location.search) // Returns the Location object's URL's query (includes leading "?" if non-empty).
+        urlParams.set('searchTerm', searchTerm)
+        const searchQuery = urlParams.toString() // 'searchTerm=rent'
+        navigate(`/search?${searchQuery}`) // http://localhost:5173/search?searchTerm=modern
+    }
+
+    // If user change 'searchTerm' or other prams on url, bind 'searchTerm' to input field
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search)
+        const searchTermFromUrl = urlParams.get('searchTerm')
+        if (searchTermFromUrl) {
+            setSearchTerm(searchTermFromUrl)
+        }
+    }, [window.location.search])
 
     return (
         <header className='bg-slate-200 shadow-md'>
@@ -15,8 +35,12 @@ const Header = () => {
                         <span className="text-slate-700">Estate</span>
                     </h1>
                 </Link>
-                <form className='bg-slate-100 p-3 rounded-lg flex items-center'>
+                <form
+                    onSubmit={formSubmitHandler}
+                    className='bg-slate-100 p-3 rounded-lg flex items-center'>
                     <input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         type='text'
                         placeholder='Search...'
                         className='bg-transparent focus:outline-none w-24 sm:w-64'
