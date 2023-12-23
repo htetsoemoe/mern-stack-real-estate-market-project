@@ -102,7 +102,7 @@ const getListings = async (req, res, next) => {
         // If parking if 'undefined' or 'false', get all boolean state of parking
         // Default Behavior
         let parking = req.query.parking
-        if (parking === undefined || parking === false) {
+        if (parking === undefined || parking === 'false') {
             parking = { $in: [false, true] }
         }
 
@@ -119,7 +119,7 @@ const getListings = async (req, res, next) => {
 
         // Query 
         const listings = await Listing.find({
-            name: { $regex: searchTerm, $options: 'i' },
+            name: { $regex: searchTerm, $options: 'i' }, // dynamic case-insensitive search query using regex
             offer,
             furnished,
             parking,
