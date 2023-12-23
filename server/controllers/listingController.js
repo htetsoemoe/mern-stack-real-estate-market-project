@@ -1,4 +1,3 @@
-const { error } = require('console');
 const Listing = require('../models/Listing');
 const { errorHandler } = require('../utilis/errorHandler');
 
@@ -78,9 +77,69 @@ const getListingWithId = async (req, res, next) => {
     }
 }
 
+// @desc Get all Listings(default) or criteria search middleware
+// @route GET /get/
+// @access Public
+const getListings = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 9
+        const startIndex = parseInt(req.query.startIndex) || 0
+
+        // If offer if 'undefined' or 'false', get all boolean state of offer
+        // Default Behavior
+        let offer = req.query.offer
+        if (offer === undefined || offer === 'false') {
+            offer = { $in: [false, true] }
+        }
+
+        // If furnished if 'undefined' or 'false', get all boolean state of furnished
+        // Default Behavior
+        let furnished = req.query.furnished
+        if (furnished === undefined || furnished === 'false') {
+            furnished = { $in: [false, true] }
+        }
+
+        // If parking if 'undefined' or 'false', get all boolean state of parking
+        // Default Behavior
+        let parking = req.query.parking
+        if (parking === undefined || parking === false) {
+            parking = { $in: [false, true] }
+        }
+
+        // If type if 'undefined' or 'all', get all boolean state of type
+        // Default Behavior
+        let type = req.query.type
+        if (type === undefined || type === 'all') {
+            type = { $in: ['sale', 'rent'] }
+        }
+
+        const searchTerm = req.query.searchTerm || ''
+        const sort = req.query.sort || 'createdAt'
+        const order = req.query.order || 'desc'
+
+        // Query 
+        const listings = await Listing.find({
+            name: { $regex: searchTerm, $options: 'i' },
+            offer,
+            furnished,
+            parking,
+            type,
+        })
+            .sort({ [sort]: order }) // Sets the sort order. If an object is passed, values allowed are asc, desc, ascending, descending, 1, and -1.
+            .limit(limit)
+            .skip(startIndex)
+
+        return res.status(200).json(listings)
+
+    } catch (error) {
+        next(error)
+    }
+}
+
 module.exports = {
     create,
     deleteListing,
     updateListing,
     getListingWithId,
+    getListings,
 }
