@@ -16,6 +16,7 @@ const Search = () => {
         sort: 'created_at',
         order: 'desc',
     })
+    const [showMore, setShowMore] = useState(false)
 
     useEffect(() => {
         // If url has request query parameters, get all from url params
@@ -58,6 +59,12 @@ const Search = () => {
             // There's no query param get all listings, or get filter query results based on query params
             const listings = await fetch(`/api/listing/get?${searchQuery}`)
             const data = await listings.json()
+
+            if (data.length > 8) {
+                setShowMore(true)
+            } else {
+                setShowMore(false)
+            }
             setListings(data)
 
             setLoading(false)
@@ -119,9 +126,26 @@ const Search = () => {
         navigate(`/search?${searchQuery}`)
     }
 
+    const onShowMoreClickHandler = async () => {
+        const numberOfListings = listings.length
+        const startIndex = numberOfListings
+        const urlParams = new URLSearchParams(window.location.search)
+        urlParams.set('startIndex', startIndex)
+        const searchQuery = urlParams.toString()
+
+        const res = await fetch(`/api/listing/get?${searchQuery}`)
+        const data = await res.json()
+
+        if (data.length < 9) {
+            setShowMore(false)
+        }
+
+        setListings([...listings, ...data])
+    }
+
     return (
         <div className='flex flex-col md:flex-row'>
-            <div className="p-7 border-b-2 md:border-r-2 md:min-h-screen">
+            <div className="p-7 border-b-2 md:border-r-2 md:min-w-[400px] md:min-h-screen">
                 <form
                     onSubmit={handlerFormSubmit}
                     className="flex flex-col gap-8">
@@ -214,7 +238,7 @@ const Search = () => {
                 </form>
             </div>
             <div className="">
-                <h1 className="text-3xl font-semibold border-b p-3 text-slate-700 mt-5">
+                <h1 className="text-3xl font-semibold border-b pl-7 text-slate-700 mt-5">
                     Listing Result:
                 </h1>
                 <div className="p-7 flex flex-wrap gap-4">
@@ -231,6 +255,16 @@ const Search = () => {
                             <ListingItem key={listing._id} listing={listing} />
                         ))
                     }
+
+                    {/* ShowMore and Pagination */}
+                    {showMore && (
+                        <button
+                            onClick={onShowMoreClickHandler}
+                            className='text-green-700 hover:underline p-7 text-center w-full'
+                        >
+                            Show More
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

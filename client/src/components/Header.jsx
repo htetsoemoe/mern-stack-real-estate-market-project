@@ -62,9 +62,14 @@ const Header = () => {
                     </Link>
                     {currentUser ? (
                         <Link to='/profile'>
-                            <img
-                                className='rounded-full h-7 w-7 object-cover'
-                                src={currentUser.avatar} alt="profile" />
+                            <div className="flex items-center gap-3">
+                                <img
+                                    className='rounded-full h-7 w-7 object-cover'
+                                    src={currentUser.avatar} alt="profile" />
+                                <span className="hidden sm:inline text-slate-700">
+                                    {currentUser.username}
+                                </span>
+                            </div>
                         </Link>
                     ) : (
                         <Link to='/sign-in'>
