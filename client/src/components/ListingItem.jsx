@@ -41,7 +41,7 @@ const ListingItem = ({ listing }) => {
                             <p className="text-white bg-green-700 mt-2 font-semibold px-1 rounded-md">
                                 ${
                                     listing.offer
-                                        ? `${(listing.regularPrice - listing.discountPrice)} discount`
+                                        ? `${(listing.regularPrice - listing.discountPrice).toLocaleString('en-US')} discount`
                                         : ''
                                 }
                             </p>
