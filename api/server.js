@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+// const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
 const mongoose = require('mongoose');
 const connectDB = require('./config/dbConn');
@@ -14,7 +14,7 @@ app.use(cookieParser());
 
 console.log(process.env.NODE_ENV);
 connectDB();
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 app.use('/api/listing/', require('./routes/listingRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
