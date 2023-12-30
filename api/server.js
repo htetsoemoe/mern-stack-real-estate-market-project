@@ -5,6 +5,7 @@ const corsOptions = require('./config/corsOptions');
 const mongoose = require('mongoose');
 const connectDB = require('./config/dbConn');
 const cookieParser = require('cookie-parser');
+const path = require('path')
 
 const PORT = process.env.PORT || 3500;
 const app = express();
@@ -16,9 +17,17 @@ console.log(process.env.NODE_ENV);
 connectDB();
 // app.use(cors(corsOptions));
 
+const ___dirname = path.resolve()
+
 app.use('/api/listing/', require('./routes/listingRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
+
+app.use(express.static(path.join(___dirname, '/client/dist'))) // use static files(frontend project)
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(___dirname, 'client', 'dist', 'index.html'))
+})
 
 // default error handler middleware
 app.use((err, req, res, next) => {
